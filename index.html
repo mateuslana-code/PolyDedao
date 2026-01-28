@@ -239,10 +239,9 @@
                 Ideally, the "valley" is empty.</p>
 
             <!-- REAL DIAGRAM -->
-            <img src="diagram.png" alt="Real Floating Order Detection: Snapshot 1008" class="diagram">
+            <img src="polymarket_book.png" alt="Real Floating Order Detection: Snapshot 1008" class="diagram">
             <p style="font-size: 0.9rem; color: var(--text-secondary); text-align: center;">
-                <em>Figure 1: Real detection event (ID: 1008). Notice the isolated order at $0.52 vs the mountain
-                    starting at $0.91.</em>
+                <em>Figure 1: Real Order Book State (Snapshot 1008).</em>
             </p>
 
             <p><strong>Detection Logic:</strong></p>
@@ -267,6 +266,40 @@
                 <li><strong>Trigger:</strong> Price moves > 5 ticks between snapshots.</li>
                 <li><strong>Verification:</strong> Reversion to mean in subsequent seconds.</li>
             </ul>
+        </div>
+
+
+        <div class="card">
+            <h2>🧮 Quantitative Methodology</h2>
+            <p>The core strategy utilizes a <strong>Sliding Window Density Analysis</strong> to detecting liquidity
+                regimes (mountains) vs. anomalies (isolated orders).</p>
+
+            <h3>1. Liquidity Regime Detection (The Mountain)</h3>
+            <p>We apply a sliding window ($w$) of varying sizes (10%, 15%, 20%, 25% of price span) across the order book
+                to maximize volume concentration density ($D$).</p>
+            <p>A "Mountain" is defined as a price range $[P_{min}, P_{max}]$ where:</p>
+            <code>Volume(w) / TotalVolume >= 60%</code>
+            <p>This effectively identifies the <strong>Mode</strong> of the market's liquidity distribution, filtering
+                out noise.</p>
+
+            <h3>2. Anomaly Separation (The Valley)</h3>
+            <p>Once the regime is established, we analyze the area between the Best Price ($P_{best}$) and the
+                Mountain's edge ($P_{edge}$).</p>
+            <p>We calculate the <strong>Valley Density Ratio ($R_D$)</strong>:</p>
+            <code>R_D = Density(Valley) / Density(Mountain)</code>
+            <p>An opportunity is flagged only if $R_D < 0.15$ (The valley is <15% as dense as the mountain), ensuring a
+                    statistically significant liquidity gap.</p>
+
+                    <h3>3. Scoring Model</h3>
+                    <p>Opportunities are ranked (0-10) using a multi-factor weighted model:</p>
+                    <ul>
+                        <li><strong>Concentration ($\alpha$, 35%)</strong>: Strength of the mountain (Kurtosis proxy).
+                        </li>
+                        <li><strong>Emptiness ($\beta$, 30%)</strong>: Quality of the void (1 - ValleyVolume%).</li>
+                        <li><strong>Gap Size ($\gamma$, 20%)</strong>: Distance in ticks ($P_{edge} - P_{best}$).</li>
+                        <li><strong>Profitability ($\delta$, 15%)</strong>: Absolute USD size of the isolated order.
+                        </li>
+                    </ul>
         </div>
 
         <div class="card">
