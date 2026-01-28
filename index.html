@@ -300,6 +300,27 @@
                         <li><strong>Profitability ($\delta$, 15%)</strong>: Absolute USD size of the isolated order.
                         </li>
                     </ul>
+
+                    <div style="margin-top: 2rem; border-top: 1px dashed var(--border); padding-top: 1rem;"></div>
+
+                    <h3>4. Type B: Fat Finger Detection (Trade Impact)</h3>
+                    <p>To detect anomalous market orders ("Fat Fingers") while avoiding false positives from valid
+                        breakouts, we use a <strong>Percentile-based Relative Impact Model</strong>.</p>
+
+                    <p><strong>Step A: Baseline Establishment</strong><br>
+                        We maintain a rolling window of the last $N=30$ trades to calculate the historical distribution
+                        of price impact (in ticks).</p>
+                    <code>Baseline_{impact} = Percentile(History_{impact}, 75th)</code>
+
+                    <p><strong>Step B: Impact Anomaly Detection</strong><br>
+                        A sequence of trades is flagged if its cumulative price impact ($I_{total}$) significantly
+                        exceeds the expected baseline:</p>
+                    <code>I_{total} > 2.5 \times (Baseline_{impact} \times TradeCount)</code>
+
+                    <p><strong>Step C: Mean Reversion Confirmation</strong><br>
+                        To filter out true market moves (news/breakouts), we require <strong>Mean Reversion</strong>.
+                        The price must revert by at least **50%** of the initial spike within the subsequent 10 trades,
+                        returning to a balanced state.</p>
         </div>
 
         <div class="card">
